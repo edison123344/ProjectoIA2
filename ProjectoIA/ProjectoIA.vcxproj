@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Detector.cpp" />
+    <ClCompile Include="Funcion2.cpp" />
     <ClCompile Include="Funciones.cpp" />
     <ClCompile Include="Inicio.cpp" />
   </ItemGroup>

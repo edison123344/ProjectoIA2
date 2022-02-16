@@ -33,8 +33,16 @@ void Funcion::apcion1() {
     }
 }
 void Funcion::apcion2() {
-    string comando = "notepad C:\\Users\\ediosn\\Pictures\\archivo.txt";
-    system(comando.c_str());
+
+    string nombreArchivo = "C:/Users/ediosn/Pictures/archivo.txt";
+    ofstream archivo;
+    // Abrimos el archivo
+    archivo.open(nombreArchivo.c_str(), fstream::out);
+    // escritura
+    archivo << "l" << endl;
+    // Finalmente lo cerramos
+    archivo.close();
+    cout << "Escrito correctamente";
 }
 void Funcion::apcion3() {
     string nombreArchivo = "C:/Users/ediosn/Pictures/archivo.txt";
@@ -42,7 +50,7 @@ void Funcion::apcion3() {
     // Abrimos el archivo
     archivo.open(nombreArchivo.c_str(), fstream::out);
     // escritura
-    archivo << "OmenCV" << endl;
+    archivo << "dos dedos arriva" << endl;
     // Finalmente lo cerramos
     archivo.close();
     cout << "Escrito correctamente";
@@ -53,7 +61,7 @@ void Funcion::apcion4() {
     // Abrimos el archivo
     archivo.open(nombreArchivo.c_str(), fstream::out);
     // escritura
-    archivo << "Opcion1" << "\n" << endl;
+    archivo << "menique arriva" << "\n" << endl;
     // Finalmente lo cerramos
     archivo.close();
     cout << "Escrito correctamente";
@@ -64,7 +72,7 @@ void Funcion::apcion5() {
     // Abrimos el archivo
     archivo.open(nombreArchivo.c_str(), fstream::out);
     // escritura
-    archivo << "Opcion3" << "\n" << endl;
+    archivo << "like" << "\n" << endl;
     // Finalmente lo cerramos
     archivo.close();
     cout << "Escrito correctamente";
@@ -75,7 +83,7 @@ void Funcion::apcion6() {
     // Abrimos el archivo
     archivo.open(nombreArchivo.c_str(), fstream::out);
     // escritura
-    archivo << "Opcion4" << "\n" << endl;
+    archivo << "dedo uno" << "\n" << endl;
     // Finalmente lo cerramos
     archivo.close();
     cout << "Escrito correctamente";
@@ -86,7 +94,7 @@ void Funcion::apcion7() {
     // Abrimos el archivo
     archivo.open(nombreArchivo.c_str(), fstream::out);
     // escritura
-    archivo << "Opcion5" << "\n" << endl;
+    archivo << "rock" << "\n" << endl;
     // Finalmente lo cerramos
     archivo.close();
     cout << "Escrito correctamente";
@@ -97,23 +105,31 @@ void Funcion::apcion8() {
     // Abrimos el archivo
     archivo.open(nombreArchivo.c_str(), fstream::out);
     // escritura
-    archivo << "Opcion6" << "\n" << endl;
+    archivo << "pistola" << "\n" << endl;
     // Finalmente lo cerramos
     archivo.close();
     cout << "Escrito correctamente";
 }
 void Funcion::apcion9() {
+    //string nombreArchivo = "C:/Users/ediosn/Pictures/archivo.txt";
     string nombreArchivo = "C:/Users/ediosn/Pictures/archivo.txt";
     ofstream archivo;
     // Abrimos el archivo
     archivo.open(nombreArchivo.c_str(), fstream::out);
     // escritura
-    archivo << "Opcion7" << "\n" << endl;
+    archivo << "dos dedos" << "\n" << endl;
     // Finalmente lo cerramos
     archivo.close();
     cout << "Escrito correctamente";
+
 }
 void Funcion::apcion10() {
-    system("EXIT");
-    cout << "Escrito correctamente";
+
+    char cadena[128];
+    ifstream fe("C:/Users/ediosn/Pictures/archivo.txt");
+    while (!fe.eof()) {
+        fe >> cadena;
+        cout << cadena << endl;
+    }
+    fe.close();
 }

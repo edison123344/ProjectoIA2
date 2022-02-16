@@ -1,4 +1,4 @@
-#include "opencv2/imgcodecs.hpp"
+/**#include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include <iostream>
@@ -27,7 +27,7 @@ double distanciaEuclidea(double momentosHu[7]) {
 
     return sqrt(d);
 }
-int Detector:: inicio()
+int Detector2::inicio2()
 {
     Funcion f = Funcion();
 
@@ -43,7 +43,7 @@ int Detector:: inicio()
         Mat anterior;
         Mat th;
         double huMoments[7];
-        Moments momentRaw;
+        Moments momentosRaw;
 
         double cx = 0, cy = 0;
         double dis = 0;
@@ -98,49 +98,36 @@ int Detector:: inicio()
             threshold(th, th, h, 255, THRESH_BINARY);
 
 
+            momentosRaw = moments(th, true);
 
-            //1 .calculo del cetro de los momentos de hu
-            momentRaw = moments(th, true);
-
-            cx = momentRaw.m10 / momentRaw.m00;
-            cy = momentRaw.m01 / momentRaw.m00;
+            cx = momentosRaw.m10 / momentosRaw.m00;
+            cy = momentosRaw.m01 / momentosRaw.m00;
 
             //cout << "Area: " << momentosRaw.m00 << endl;
 
-            HuMoments(momentRaw, huMoments);
-            //distancia 
-            if (momentRaw.m00 > 100) {
+            HuMoments(momentosRaw, huMoments);
 
-                dis = distanciaEuclidea(huMoments);
 
-                if (dis < 0.1) {
-                    circle(roi_image, Point(cx, cy), 3, Scalar(10, 10, 200), 3);
-                }
-
-            }
-            //2 lista de almacenamiento de contorno
             vector<Vec4i> hierarchy;
             vector<vector<Point> > contours_hull;
-            //3 aplicacion del operador morfologico
             Mat Erode(Size(640, 420), CV_8UC1);
-            erode(th, Erode, Mat(), Point(-1, -1));
-
+            cv::erode(th, Erode, cv::Mat(), cv::Point(-1, -1));
             Mat Dialate(Size(640, 420), CV_8UC1);
-            dilate(Erode, Dialate, Mat(), Point(-1, -1), 2);
-            findContours(Dialate.clone(), contours_hull, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0)); 
+            cv::dilate(Erode, Dialate, cv::Mat(), cv::Point(-1, -1), 2);
+            findContours(Dialate.clone(), contours_hull, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0)); // CV_CHAIN_APPROX_SIMPLE
 
             if (contours_hull.size() > 0)
             {
-                //4objeto de casco convexo para cada contorno
+                //Encuentre el objeto de casco convexo para cada contorno
                 vector<vector<Point> >hull(contours_hull.size());
                 //guarda los puntos de defectos para cada contorno
                 vector<vector<Vec4i>> defects(contours_hull.size());
 
                 vector<vector<int> > hullsI(contours_hull.size());
 
-                //5encuentra el mayor contorno
+                //encuentra el mayor contorno
                 IndexOfBiggestContour = findBiggestContour(contours_hull);
-                //puntos para dibujar un recctangulos 
+
                 Point2f rect_points[4];
                 vector<RotatedRect> minRect(contours_hull.size());
 
@@ -158,7 +145,7 @@ int Detector:: inicio()
                         if (IndexOfBiggestContour == i)
                         {
                             minRect[i] = minAreaRect(Mat(contours_hull[i]));
-                            //6Dibujo de contornos
+
                             drawContours(roi_image, contours_hull, IndexOfBiggestContour, CV_RGB(255, 255, 255), 2, 8, hierarchy, 0, Point());
                             drawContours(roi_image, hull, IndexOfBiggestContour, CV_RGB(255, 0, 0), 2, 8, hierarchy, 0, Point());
 
@@ -180,13 +167,13 @@ int Detector:: inicio()
                 }
                 catch (Exception ex)
                 {
-                    std::cout << "errror!!!" << std::endl;
+                    //std::cout << "errror!!!" << std::endl;
                 }
 
                 for (int i = 0; i < contours_hull.size(); i++)
                 {
                     size_t count = contours_hull[i].size();
-                   //std::cout << "contador : " << count << std::endl;
+                    //std::cout << "contador : " << count << std::endl;
                     if (count < 300)
                         continue;
 
@@ -195,90 +182,103 @@ int Detector:: inicio()
                     while (d != defects[i].end()) {
                         Vec4i& v = (*d);
                         if (IndexOfBiggestContour == i) {
-                            //7divujo de puntos
-                            int startidx = v[0];
-                            Point ptStart(contours_hull[i][startidx]); // punto del contorno donde comienza el defecto
-                            int endidx = v[1];
-                            Point ptEnd(contours_hull[i][endidx]); // punto del contorno donde termina el defecto
-                            int faridx = v[2];
-                            //8
-                            Point ptFar(contours_hull[i][faridx]); // el más alejado del punto convexo del casco dentro del defecto
-                            float depth = v[3] / 256; // distancia entre el punto más lejano y el casco convexo
+                            if (momentosRaw.m00 > 100) {
 
-                            //cout <<"punto1::" << startidx <<"punto2::" << endidx << "punto3::"<<faridx << endl;
-
-                            if (depth > 4 && depth < 130)
-                            {//9dibujo de los contornos
-                                line(roi_image, ptStart, ptFar, CV_RGB(0, 255, 0), 2);
-                                line(roi_image, ptEnd, ptFar, CV_RGB(0, 255, 0), 2);
-                                circle(roi_image, ptStart, 4, Scalar(100, 0, 255), 2);
-                            }
-                            //10modificacion de pociciones de la mano segun los puntos mas altos del contorn
-                            if (startidx >= 670 && endidx == 674 && faridx == 673) {
-                                //punto1::670punto2::674punto3::673                             
-                               cout << "mano abierta" << endl;
-                               f.apcion1();
-                            }
-                            if (startidx >= 357 && endidx == 460 && faridx == 404) {
-                                //punto1::357punto2::460punto3::404
-                               cout << "l" << endl;
-                               f.apcion2();
-                            }
-                            if (startidx >= 569 && endidx == 575 && faridx == 574) {
-                               // punto1::569punto2::575punto3::574
-                               cout << "dos dedos arriva" << endl;
-                               f.apcion3();
-                             }
-                            if (startidx == 408 && endidx == 424 && faridx == 412) {
-                                //punto1::408punto2::424punto3::412
-                               cout << " menique arriva" << endl;
-                               f.apcion4();
-                            }
-                            if (startidx == 313 && endidx == 338 && faridx >= 325) {
-                                //punto1::313punto2::338punto3::325
-                                cout << "like" << endl;
-                                f.apcion5();
-                            }
-                            //parte2
-                            if (startidx == 207 && endidx == 209 && faridx == 208) {
-                                //punto1::207punto2::209punto3::208
-                               cout << "dedo uno" << endl;
-                               f.apcion6();
-                            }
-                            if (startidx == 398 && endidx == 400 && faridx == 399) {
-                                //punto1::398punto2::400punto3::399
-                              cout << "rock" << endl;
-                              f.apcion7();
-                            }
-                            if (startidx >= 332 && endidx == 334 && faridx <= 333) {
-                                //punto1::332punto2::334punto3::333
-                               cout << "pistola" << endl;
-                               f.apcion8();
-                            }
-                            if (startidx == 373 && endidx == 401 && faridx == 380) {
-                                //punto1::373punto2::401punto3::380
-                               cout << "dos dedos" << endl;
-                               f.apcion9();
-                            }
+                                dis = distanciaEuclidea(huMoments);
 
 
-                            if (startidx>= 209 && endidx == 0 &&faridx >= 339) {
-                               // punto1::209punto2::0punto3::339
-                                cout << "puno" << endl;
-                                f.apcion10();
-                               
+                                int startidx = v[0];
+                                Point ptStart(contours_hull[i][startidx]); // punto del contorno donde comienza el defecto
+                                int endidx = v[1];
+                                Point ptEnd(contours_hull[i][endidx]); // punto del contorno donde termina el defecto
+                                int faridx = v[2];
+                                Point ptFar(contours_hull[i][faridx]); // el más alejado del punto convexo del casco dentro del defecto
+                                float depth = v[3] / 256; // distancia entre el punto más lejano y el casco convexo
+
+                                if (depth > 4 && depth < 130)
+                                {
+                                    line(roi_image, ptStart, ptFar, CV_RGB(0, 255, 0), 2);
+                                    line(roi_image, ptEnd, ptFar, CV_RGB(0, 255, 0), 2);
+                                    circle(roi_image, ptStart, 4, Scalar(100, 0, 255), 2);
+                                    //cout <<"punto1::" << startidx <<"punto2::" << endidx << "punto3::"<<faridx << endl;
+                                    if (dis <= 0.03) {
+                                        circle(roi_image, Point(cx, cy), 3, Scalar(10, 10, 200), 3);
+                                        //modificacion de pociciones de la mano
+                                        if (startidx >= 588 && endidx >= 622 && faridx >= 600) {
+                                            //punto1::588punto2::622punto3::600                        
+                                            cout << "mano abierta" << endl;
+                                            // f.apcion1();
+                                        }
+                                        if (startidx >= 240 && endidx == 328 && faridx >= 301) {
+
+                                            //punto1::240punto2::328punto3::301
+                                            cout << "l" << endl;
+                                            //f.apcion2();
+                                        }
+                                        if (startidx >= 303 && endidx == 409 && faridx >= 344) {
+                                            // punto1::303punto2::409punto3::344
+
+                                            cout << "dos dedos arriva menique y anular" << endl;
+                                            // f.apcion3();
+                                        }
+                                        if (startidx >= 217 && endidx == 251 && faridx >= 234) {
+                                            //punto1::217punto2::251punto3::234
+                                            cout << " menique arriva" << endl;
+                                            // f.apcion4();
+                                        }
+                                        if (startidx >= 304 && endidx == 381 && faridx >= 349) {
+                                            //punto1::304punto2::381punto3::349
+                                            cout << "like" << endl;
+                                            // f.apcion5();
+                                        }
+                                    }
+
+                                }
+                                /**if (dis > 0.03) {
+                                    circle(roi_image, Point(cx, cy), 3, Scalar(10, 100, 100), 3);
+                                    //parte2
+                                    if (startidx == 321 && endidx == 323 && faridx <= 322) {
+                                        //punto1::207punto2::209punto3::208
+                                        //punto1::321punto2::323punto3::322
+                                        cout << "dedo uno" << endl;
+                                        // f.apcion6();
+                                    }
+                                    if (startidx == 398 && endidx == 400 && faridx >= 399) {
+                                        //punto1::398punto2::400punto3::399
+                                        cout << "rock" << endl;
+                                        // f.apcion7();
+                                    }
+                                    if (startidx >= 275 && endidx == 380 && faridx == 345) {
+                                        //punto1::275punto2::380punto3::345
+                                        cout << "pistola" << endl;
+                                        //f.apcion8();
+                                    }
+                                    if (startidx == 373 && endidx == 401 && faridx == 380) {
+                                        //punto1::373punto2::401punto3::380
+                                        cout << "dos  dedos" << endl;
+                                        // f.apcion9();
+                                    }
+
+                                    if (startidx >= 209 && endidx == 0 && faridx >= 339) {
+                                        // punto1::209punto2::0punto3::339
+                                        cout << "puno" << endl;
+                                        //f.apcion10();
+
+                                    }
+                                }
                             }
+
                         }
                         d++;
                     }
                 }
             }
-            //11resultados
+            //resultados
             //imagen original
             imshow("Video Original", frame);
             //imshow("roi image", roi_image);
             //imshow("roi image gray", grayROI);
-            imshow(" image dif", th);
+            imshow("roi image dif", th);
             //imshow("roi image anterior", anterior);
 
 
@@ -293,7 +293,7 @@ int Detector:: inicio()
     return 0;
 }
 
-//5contorno de las manos
+
 int findBiggestContour(vector<vector<Point> > contours)
 {
     int indexOfBiggestContour = -1;
@@ -307,3 +307,4 @@ int findBiggestContour(vector<vector<Point> > contours)
     }
     return indexOfBiggestContour;
 }
+*/

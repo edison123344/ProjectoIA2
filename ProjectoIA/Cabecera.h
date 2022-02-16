@@ -23,3 +23,7 @@ class Detector {
 public:
 	int inicio();
 };
+class Detector2 {
+public:
+	//int inicio2();
+};

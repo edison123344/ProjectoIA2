@@ -11,7 +11,8 @@ int main(int argc, char** argv)
 {
     Detector d = Detector();
     d.inicio();
-
+   // Detector2 d = Detector2();
+    //d.inicio2();
     return 0;
 }
 
